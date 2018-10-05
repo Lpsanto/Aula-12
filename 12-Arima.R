@@ -98,6 +98,197 @@ Modelo <-c(list("arima123","arima120","arima121",
 Resultados <- data.frame(Modelo,AIC,BIC)
 
 #Análise para o Câmbio
+library("urca")                                #Carrega Pacote URCA
+library(readxl)                                #Carrega Pacote readxl
+library(pwt8)                                  #Carrega o pacote PWT8.0
+
+
+data("pwt8.0")                                 #Carrega os dados elencados "pwt8.0" dispoiníveis no pacote
+View(pwt8.0)                                   #Visualiza os dados na tabela pwt8.0
+
+
+br <- subset(pwt8.0, country=="Brazil", 
+             select = c("rgdpna","emp","xr"))  #Cria a tabela "br" com dados das linhas que assumem o valor "country" (país) igual a "Brazil", selecionando as colunas cujas variáveis são "rgdpna" (PIB), "avh" (TRABALHO)  e "xr" (CÂMBIO)
+
+colnames(br) <-  c("PIB","Cambio","Câmbio")   #Renomeia as colunas para PIB, Trabalho e Câmbio
+
+#Separando as variáveis
+PIB <- br$PIB[45:62]                    #Cria o vetor para variável PIB                  
+CAMBIO <- br$Cambio[45:62]            #Cria o vetor para variável CAMBIO
+CAMBIO <- br$Câmbio[45:62]              #Cria o vetor para variável CAMBIO
+Anos <- seq(from=1994, to=2011, by=1)   #Cria um vetor para o tempo em anos de 1994 até 2011 
+
+
+#Analise para o Cambio
+
+plot(CAMBIO, type = "l")                            #Cria gráfico para o PIB
+cambio <- ts(CAMBIO, start = 1994, frequency = 1)  #Define como Série Temporal
+plot(cambio, main="Pessoa Empregadas no Brasil", 
+     ylab="Qte de Pessoas Empregadas-milhões", 
+     xlab="Ano")                                      #Cria gráfico da Série Temporal
+
+acf(cambio)                                          #Função de Autocorrelação
+pacf(cambio)                                         ##Função de Autocorrelação Parcial
+reglinEMP <- lm(CAMBIO ~ Anos)                       #Regressão linear simples do cambio em relação ao tempo
+reglinEMP                                             #Exibe os resultados da regressão linear
+summary(reglinEMP)
+plot(cambio)                                         #Gráfcio dos dados
+abline(reglinEMP, col="Blue")                         #Insere a linha de regressão linear estimada
+
+
+#Removendo Tendência
+
+residuosEMP <- reglinEMP$residuals                    #Salva os resíduos no vetor residuosEMP
+reglinEMPres <- lm(residuosEMP ~ Anos)                #Regressão linear dos resíduos em função do tempo
+plot(residuosEMP,type="l")                            #Gráfico dos resíduos
+abline(reglinEMPres, col="Blue")                      #Insere a linha de regressão linear dos resíduos
+
+
+#Removendo Tendência por meio da diferença
+
+pdcambio <- diff(CAMBIO)                                #Calcula a primeira diferença da série de dados
+diferenca1 <- (data.frame(CAMBIO[2:18],pdcambio))       #Exibe a tabela da série original coma diferença <- 
+DIFERENCA <- ts(diferenca1, start = 1994, frequency = 1)  #Define serie temporal para a tabela diferenca1
+plot(DIFERENCA, plot.type="single", col=c("Black","Green")) #Cria o grafico com as duas series
+plot(pdcambio, type="l")                                   #Cria gr´pafico somente para a serie da diferença
+
+#Teste Dick-Fuller Aumentado conferindo se a serie se tornou estacionaria
+
+pdcambio1 <- diff(cambio)                                            #Calculando-se a primeira diferença
+TesteDF_Cambio1_trend <- ur.df(pdcambio1, "trend", lags = 1)         #Teste DF-DickFuller com drift e com tendencia
+summary(TesteDF_Cambio1_trend) 
+
+pdcambio2 <- diff(diff(cambio))                                      #Calculando-se a segunda diferença
+TesteDF_Cambio2_trend <- ur.df(pdcambio2, "trend", lags = 1)         #Teste DF-DickFuller com drift e com tendencia
+summary(TesteDF_Cambio2_trend)
+
+#Estimando a série temporal
+
+arima123 <- arima(cambio, c(1,2,3))
+
+#ARMA
+arima120 <- arima(cambio, c(1,2,0))
+arima121 <- arima(cambio, c(1,2,1))
+arima122 <- arima(cambio, c(1,2,2))
+
+arima220 < - arima(cambio, c(2,2,0))
+arima221 < - arima(cambio, c(2,2,1))
+arima222 <- arima(cambio, c(2,2,3))
+arima223 <- arima(cambio, c(2,2,3))
+#MA
+arima021<- arima(cambio, c(0,2,1))
+arima022<- arima(cambio, c(0,2,2))
+arima023<- arima(cambio, c(0,2,3))
+#AR
+arima0120
+
+#Escolher o melhor modelo com base no menor AIC/BIC
+estimacoes <- list(arima123,arima120,arima121,
+                   arima122,arima220,rima221,
+                   arima222,arima223,arima021,arima021, arima022,
+                   arima023,arima0120)
+AIC <- sapply(estimacoes, AIC)
+BIC <- sapply(estimacoes, BIC)
+Modelo <-c(list("arima123","arima120","arima121",
+                "arima122","arima220","arima221",
+                "arima222","arima223","arima021","arima021", "arima022",
+                "arima023","arima0120")) 
+Resultados <- data.frame(Modelo,AIC,BIC)
 
 #Análise para o PIB
+ibrary("urca")                                #Carrega Pacote URCA
+library(readxl)                                #Carrega Pacote readxl
+library(pwt8)                                  #Carrega o pacote PWT8.0
 
+
+data("pwt8.0")                                 #Carrega os dados elencados "pwt8.0" dispoiníveis no pacote
+View(pwt8.0)                                   #Visualiza os dados na tabela pwt8.0
+
+
+br <- subset(pwt8.0, country=="Brazil", 
+             select = c("rgdpna","emp","xr"))  #Cria a tabela "br" com dados das linhas que assumem o valor "country" (país) igual a "Brazil", selecionando as colunas cujas variáveis são "rgdpna" (PIB), "avh" (TRABALHO)  e "xr" (CÂMBIO)
+
+colnames(br) <-  c("PIB","PIB","Câmbio")   #Renomeia as colunas para PIB, Trabalho e Câmbio
+
+#Separando as variáveis
+PIB <- br$PIB[45:62]                    #Cria o vetor para variável PIB                  
+PIB <- br$PIB[45:62]            #Cria o vetor para variável PIB
+PIB <- br$Câmbio[45:62]              #Cria o vetor para variável PIB
+Anos <- seq(from=1994, to=2011, by=1)   #Cria um vetor para o tempo em anos de 1994 até 2011 
+
+
+#Analise para o PIB
+
+plot(PIB, type = "l")                            #Cria gráfico para o PIB
+PIB <- ts(PIB, start = 1994, frequency = 1)  #Define como Série Temporal
+plot(PIB, main="Pessoa Empregadas no Brasil", 
+     ylab="Qte de Pessoas Empregadas-milhões", 
+     xlab="Ano")                                      #Cria gráfico da Série Temporal
+
+acf(PIB)                                          #Função de Autocorrelação
+pacf(PIB)                                         ##Função de Autocorrelação Parcial
+reglinEMP <- lm(PIB ~ Anos)                       #Regressão linear simples do PIB em relação ao tempo
+reglinEMP                                             #Exibe os resultados da regressão linear
+summary(reglinEMP)
+plot(PIB)                                         #Gráfcio dos dados
+abline(reglinEMP, col="Blue")                         #Insere a linha de regressão linear estimada
+
+
+#Removendo Tendência
+
+residuosEMP <- reglinEMP$residuals                    #Salva os resíduos no vetor residuosEMP
+reglinEMPres <- lm(residuosEMP ~ Anos)                #Regressão linear dos resíduos em função do tempo
+plot(residuosEMP,type="l")                            #Gráfico dos resíduos
+abline(reglinEMPres, col="Blue")                      #Insere a linha de regressão linear dos resíduos
+
+
+#Removendo Tendência por meio da diferença
+
+pdPIB <- diff(PIB)                                #Calcula a primeira diferença da série de dados
+diferenca1 <- (data.frame(PIB[2:18],pdPIB))       #Exibe a tabela da série original coma diferença <- 
+DIFERENCA <- ts(diferenca1, start = 1994, frequency = 1)  #Define serie temporal para a tabela diferenca1
+plot(DIFERENCA, plot.type="single", col=c("Black","Green")) #Cria o grafico com as duas series
+plot(pdPIB, type="l")                                   #Cria gr´pafico somente para a serie da diferença
+
+#Teste Dick-Fuller Aumentado conferindo se a serie se tornou estacionaria
+
+pdPIB1 <- diff(PIB)                                            #Calculando-se a primeira diferença
+TesteDF_PIB1_trend <- ur.df(pdPIB1, "trend", lags = 1)         #Teste DF-DickFuller com drift e com tendencia
+summary(TesteDF_PIB1_trend) 
+
+pdPIB2 <- diff(diff(PIB))                                      #Calculando-se a segunda diferença
+TesteDF_PIB2_trend <- ur.df(pdPIB2, "trend", lags = 1)         #Teste DF-DickFuller com drift e com tendencia
+summary(TesteDF_PIB2_trend)
+
+#Estimando a série temporal
+
+arima123 <- arima(PIB, c(1,2,3))
+
+#ARMA
+arima120 <- arima(PIB, c(1,2,0))
+arima121 <- arima(PIB, c(1,2,1))
+arima122 <- arima(PIB, c(1,2,2))
+
+arima220 < - arima(PIB, c(2,2,0))
+arima221 < - arima(PIB, c(2,2,1))
+arima222 <- arima(PIB, c(2,2,3))
+arima223 <- arima(PIB, c(2,2,3))
+#MA
+arima021<- arima(PIB, c(0,2,1))
+arima022<- arima(PIB, c(0,2,2))
+arima023<- arima(PIB, c(0,2,3))
+#AR
+arima0120
+
+#Escolher o melhor modelo com base no menor AIC/BIC
+estimacoes <- (arima123,arima120,arima121,
+                   arima122,arima220,rima221,
+                   arima222,arima223,arima021,arima021, arima022,
+                   arima023,arima0120)
+AIC <- sapply(estimacoes, AIC)
+BIC <- sapply(estimacoes, BIC)
+Modelo <-"arima123","arima120","arima121",
+                "arima122","arima220","arima221",
+                "arima222","arima223","arima021","arima021", "arima022",
+                "arima023","arima0120")) 
+Resultados <- data.frame(Modelo,AIC,BIC)
